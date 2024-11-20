@@ -1,0 +1,12 @@
+<!-- edit_personnel.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Редактировать информацию о работнике</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+  </form>
+  <a href="{% url 'personnel_list' %}" class="btn btn-secondary mt-3">Назад</a>
+{% endblock %}

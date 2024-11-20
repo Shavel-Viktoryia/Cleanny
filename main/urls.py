@@ -5,5 +5,7 @@ from . import views
 urlpatterns = [
     path('schedule/edit/<int:schedule_id>/', views.edit_schedule, name='edit_schedule'),
     path('schedule/new/', views.edit_schedule, name='new_schedule'),
-    path('schedule/', views.schedule_list, name='schedule_list')
+    path('schedule/', views.schedule_list, name='schedule_list'),
+    path('personnel/', views.personnel_list, name='personnel_list'),
+    path('personnel/edit/<int:pk>/', views.edit_personnel, name='edit_personnel')
 ]

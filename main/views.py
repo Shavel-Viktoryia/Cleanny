@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from .models import WorkSchedule
-from .forms import WorkScheduleForm
+from .models import WorkSchedule, Personnel
+from .forms import WorkScheduleForm, PersonnelForm
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
@@ -113,3 +113,24 @@ def schedule_list(request):
         schedule.data_from_google = schedule_data  # Добавим данные из Google Sheets
         print("Полученные данные:", schedule_data)  # Для отладки, выводим данные в консоль
     return render(request, 'schedule_list.html', {'schedules': schedules})
+
+def personnel_list(request):
+    # Получить все данные о работниках
+    personnel = Personnel.objects.all()
+    return render(request, 'personnel_list.html', {'personnel': personnel})
+
+@login_required
+def edit_personnel(request, pk):
+    # Получить работника по id
+    personnel = get_object_or_404(Personnel, pk=pk)
+
+    if request.method == "POST":
+        form = PersonnelForm(request.POST, instance=personnel)
+        if form.is_valid():
+            form.save()
+            return redirect('personnel_list')
+    else:
+        form = PersonnelForm(instance=personnel)
+
+    # Now rendering the form in both POST and GET cases
+    return render(request, 'edit_personnel.html', {'form': form, 'personnel': personnel})

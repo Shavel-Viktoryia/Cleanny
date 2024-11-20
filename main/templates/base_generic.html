@@ -1,0 +1,32 @@
+<!-- templates/base_generic.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}График Работы{% endblock %}</title>
+    <!-- Подключаем CSS (можно добавить свои стили) -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'work_schedule' %}">Главная</a></li>
+                <!-- Добавьте другие ссылки на страницы -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Контент страницы будет отображаться здесь -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Ваш сайт</p>
+    </footer>
+
+</body>
+</html>

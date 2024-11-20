@@ -1,51 +1,28 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from .models import WorkSchedule
 from .forms import WorkScheduleForm
-from .google_sync import get_worksheet
-from django.utils import timezone
 
-def work_schedule_view(request):
-    # Получаем расписание для работника
-    schedule = WorkSchedule.objects.get(personnel=request.user.personnel)
+@login_required
+def edit_schedule(request, schedule_id=None):
+    if schedule_id:
+        # Editing an existing schedule
+        schedule = get_object_or_404(WorkSchedule, id=schedule_id)
+    else:
+        # Creating a new schedule
+        schedule = WorkSchedule()  # Create an empty schedule object
 
     if request.method == "POST":
-        form = WorkScheduleForm(request.POST)
+        form = WorkScheduleForm(request.POST, instance=schedule)
         if form.is_valid():
-            # Получаем доступ к Google Таблице и обновляем расписание
-            worksheet = get_worksheet(schedule.schedule_url, schedule.sheet_name)
-
-            days = {
-                'MONDAY': form.cleaned_data['MONDAY'],
-                'TUESDAY': form.cleaned_data['TUESDAY'],
-                'WEDNESDAY': form.cleaned_data['WEDNESDAY'],
-                'THURSDAY': form.cleaned_data['THURSDAY'],
-                'FRIDAY': form.cleaned_data['FRIDAY'],
-                'SATURDAY': form.cleaned_data['SATURDAY'],
-                'SUNDAY': form.cleaned_data['SUNDAY'],
-            }
-
-            # Обновляем таблицу с помощью метода update_cell
-            for row, (day, status) in enumerate(days.items(), start=2):
-                worksheet.update_cell(row, 2, 'Да' if status else 'Нет')
-
-            # Обновляем поле last_updated в модели
-            schedule.last_updated = timezone.now()
-            schedule.save()
-
-            # Перенаправляем на ту же страницу после обновления
-            return redirect('work_schedule_view')
+            form.save()
+            return redirect('schedule_list')  # Redirect to the schedule list after saving
     else:
-        form = WorkScheduleForm()
+        form = WorkScheduleForm(instance=schedule)
 
-    # Передаем текущие данные расписания и форму в шаблон
-    days = {
-        'MONDAY': schedule.MONDAY,
-        'TUESDAY': schedule.TUESDAY,
-        'WEDNESDAY': schedule.WEDNESDAY,
-        'THURSDAY': schedule.THURSDAY,
-        'FRIDAY': schedule.FRIDAY,
-        'SATURDAY': schedule.SATURDAY,
-        'SUNDAY': schedule.SUNDAY,
-    }
+    return render(request, 'edit_schedule.html', {'form': form, 'schedule_id': schedule.id if schedule_id else None})
 
-    return render(request, 'work_schedule.html', {'form': form, 'days': days})
+@login_required
+def schedule_list(request):
+    schedules = WorkSchedule.objects.all()
+    return render(request, 'schedule_list.html', {'schedules': schedules})

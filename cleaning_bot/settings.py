@@ -129,3 +129,5 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
+GOOGLE_CREDENTIALS_FILE = r"D:\Cleaner\Cleaner\mypython-427607-38a29feb0dfa.json"
+

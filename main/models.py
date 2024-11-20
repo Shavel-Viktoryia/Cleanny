@@ -1,13 +1,18 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from email.policy import default
 from pickle import TUPLE
 from tkinter.constants import CASCADE
+from django.conf import settings
 
 from django.contrib.admin.utils import build_q_object_from_lookup_parameters
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+from googleapiclient.discovery import build
+from google.oauth2.service_account import Credentials
+from django.utils.timezone import now
 
 # Create your models here.
 # Модель для услуг
@@ -165,8 +170,79 @@ class WorkSchedule(models.Model):
     schedule_url = models.URLField()  # Ссылка на Google Таблицу с расписанием
     last_updated = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f'График работы для {self.personnel.nickname}'
+    def fetch_schedule(self):
+        """
+        Получает расписание из таблицы с месяцем и днями недели, где работник отмечает + в день работы.
+        """
+        sheet_id = self.schedule_url.split('/')[5]
+
+        SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+        creds = Credentials.from_service_account_file(
+            settings.GOOGLE_CREDENTIALS_FILE,
+            scopes=SCOPES
+        )
+        service = build('sheets', 'v4', credentials=creds)
+
+        sheet = service.spreadsheets()
+        try:
+            result = sheet.values().get(spreadsheetId=sheet_id, range='A1:AF100').execute()
+        except Exception as e:
+            raise RuntimeError(f"Ошибка при доступе к Google Sheets: {e}")
+
+        rows = result.get('values', [])
+        if not rows or len(rows) < 3:
+            raise ValueError("Некорректный формат таблицы")
+
+        # Извлекаем месяц и год
+        month_row = rows[0][1]  # Предполагается, что месяц в первой строке
+        year = now().year
+        try:
+            month = datetime.strptime(month_row, '%B').month
+        except ValueError:
+            raise ValueError("Некорректное название месяца")
+
+        header = rows[2]  # Третья строка содержит числа (1–31)
+        schedule_data = []
+
+        for row in rows[3:]:
+            personnel_name = row[0]  # Имя сотрудника в первом столбце
+            for i, day in enumerate(header[1:], start=1):  # Столбцы с днями
+                if len(row) > i and row[i].strip() == '+':
+                    schedule_data.append({
+                        'personnel_name': personnel_name,
+                        'date': f"{year}-{month:02d}-{int(day):02d}",
+                        'hours': '8:00-17:00',
+                        'comments': '',
+                    })
+
+        return schedule_data
+
+    def update_schedule(self, data):
+        """
+        Обновляет расписание в Google Таблице.
+        """
+        sheet_id = self.schedule_url.split('/')[5]
+
+        SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+        creds = Credentials.from_service_account_file(
+            settings.GOOGLE_CREDENTIALS_FILE,
+            scopes=SCOPES
+        )
+        service = build('sheets', 'v4', credentials=creds)
+
+        values = [[entry['personnel_name'], entry['date'], entry['hours'], entry['comments']] for entry in data]
+        body = {'values': values}
+
+        sheet = service.spreadsheets()
+        try:
+            sheet.values().update(
+                spreadsheetId=sheet_id,
+                range='A1:D{}'.format(len(values) + 1),
+                valueInputOption='RAW',
+                body=body
+            ).execute()
+        except Exception as e:
+            raise RuntimeError(f"Ошибка при обновлении Google Sheets: {e}")
 
 # Модель для администраторов
 class Admin(models.Model):

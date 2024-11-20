@@ -1,10 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="text-center mb-4">Главная страница</h1>
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <a href="{% url 'schedule_list' %}" class="btn btn-primary btn-lg w-100 py-4 rounded-pill shadow-sm">
+                    <i class="bi bi-calendar-check"></i> Расписание
+                </a>
+            </div>
+            <div class="col-md-3 mb-4">
+                <a href="{% url 'personnel_list' %}" class="btn btn-success btn-lg w-100 py-4 rounded-pill shadow-sm">
+                    <i class="bi bi-person-fill"></i> Персонал
+                </a>
+            </div>
+            <div class="col-md-3 mb-4">
+                <a href="{% url 'order_list' %}" class="btn btn-warning btn-lg w-100 py-4 rounded-pill shadow-sm">
+                    <i class="bi bi-cart-fill"></i> Заказы
+                </a>
+            </div>
+            <div class="col-md-3 mb-4">
+                <a href="{% url 'services_list' %}" class="btn btn-info btn-lg w-100 py-4 rounded-pill shadow-sm">
+                    <i class="bi bi-briefcase-fill"></i> Услуги
+                </a>
+            </div>
+            <div class="col-md-3 mb-4">
+                <a href="{% url 'equipment_list' %}" class="btn btn-dark btn-lg w-100 py-4 rounded-pill shadow-sm">
+                    <i class="bi bi-gear-fill"></i> Оборудование
+                </a>
+            </div>
+            <div class="col-md-3 mb-4">
+                <a href="{% url 'daily_inventory_list' %}" class="btn btn-danger btn-lg w-100 py-4 rounded-pill shadow-sm">
+                    <i class="bi bi-box-fill"></i> Инвентарь
+                </a>
+            </div>
+            <div class="col-md-3 mb-4">
+                <a href="{% url 'customer_list' %}" class="btn btn-secondary btn-lg w-100 py-4 rounded-pill shadow-sm">
+                    <i class="bi bi-person-lines-fill"></i> Клиенты
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    <style>
+        /* Переопределение и добавление стилей */
+        .btn {
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+        .btn i {
+            margin-right: 10px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .row {
+            margin-top: 30px;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+{% endblock %}

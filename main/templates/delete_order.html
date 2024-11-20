@@ -1,10 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Вы уверены, что хотите удалить заказ?</h1>
+  <p><strong>Клиент:</strong> {{ order.customer.name }}</p>
+  <p><strong>Персонал:</strong> {{ order.personnel.nickname }}</p>
+  <p><strong>Услуги:</strong> {{ order.services.all|join:", " }}</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Удалить</button>
+  </form>
+  <a href="{% url 'order_list' %}" class="btn btn-secondary">Отмена</a>
+{% endblock %}

@@ -1,10 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Инвентарь на день: {{ inventory.date }} - {{ inventory.personnel.nickname }}</h1>
+    <p>Статус: {% if inventory.status %} Завершено {% else %} В процессе {% endif %}</p>
+
+    <h2>Использование оборудования:</h2>
+    <ul>
+        {% for usage in equipment_usage %}
+            <li>{{ usage.equipment.name }}: использовано {{ usage.quantity_used }} шт., возвращено {{ usage.returned_quantity }} шт.
+                <a href="{% url 'equipment_usage_delete' usage.id %}">Удалить</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'equipment_usage_create' inventory.id %}">Добавить использование оборудования</a>
+{% endblock %}

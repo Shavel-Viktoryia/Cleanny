@@ -1,10 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h1 class="text-center mb-4">Список оборудования</h1>
+    <div class="d-flex justify-content-end mb-3">
+      <a href="{% url 'add_equipment' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Добавить оборудование
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Название</th>
+            <th>Тип</th>
+            <th>Количество</th>
+            <th>Дата последнего пополнения</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for equipment in equipment_list %}
+            <tr>
+              <td>{{ equipment.name }}</td>
+              <td>{{ equipment.get_type_display }}</td>
+              <td>{{ equipment.quantity }}</td>
+              <td>{{ equipment.last_restocked|date:"d.m.Y" }}</td>
+              <td class="text-center">
+                <a href="{% url 'edit_equipment' equipment.pk %}" class="btn btn-warning btn-sm">
+                  <i class="fas fa-edit"></i> Редактировать
+                </a>
+                <a href="{% url 'delete_equipment' equipment.pk %}" class="btn btn-danger btn-sm" onclick="return confirm('Вы уверены, что хотите удалить это оборудование?');">
+                  <i class="fas fa-trash"></i> Удалить
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

@@ -3,6 +3,7 @@ from .models import (Service, Customer, Review, Personnel, Order,
                      Equipment, DailyInventory, EquipmentUsage, WorkSchedule,
                      Admin, MonthlyStatistics, Address, OrderService)
 
+
 # Register your models here.
 admin.site.register(Service)
 admin.site.register(Customer)

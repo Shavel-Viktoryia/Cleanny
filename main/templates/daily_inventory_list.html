@@ -1,10 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Список инвентарей</h1>
+    <ul>
+        {% for inventory in inventories %}
+            <li>
+                <a href="{% url 'daily_inventory_detail' inventory.id %}">{{ inventory.date }} - {{ inventory.personnel.nickname }}</a>
+                <a href="{% url 'daily_inventory_edit' inventory.id %}">Редактировать</a>
+                <a href="{% url 'daily_inventory_delete' inventory.id %}">Удалить</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'daily_inventory_create' %}">Добавить новый инвентарь</a>
+{% endblock %}

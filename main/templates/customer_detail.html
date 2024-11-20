@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Клиент: {{ customer.name }}</h1>
+    <p><strong>Никнейм:</strong> {{ customer.nickname }}</p>
+    <p><strong>Телеграм ID:</strong> {{ customer.telegram_id }}</p>
+    <p><strong>Контактный номер:</strong> {{ customer.contact_number }}</p>
+    <p><strong>Email:</strong> {{ customer.email }}</p>
+{% endblock %}

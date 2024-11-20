@@ -1,10 +1,117 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1 class="text-center mb-4 text-primary">Список услуг</h1>
+
+    <!-- Кнопка добавления услуги -->
+    <div class="d-flex justify-content-end mb-3">
+      <a href="{% url 'add_service' %}" class="btn btn-success btn-lg rounded-pill shadow-sm">
+        <i class="fas fa-plus"></i> Добавить услугу
+      </a>
+    </div>
+
+    <!-- Таблица услуг -->
+    <div class="table-responsive">
+      <table class="table table-striped table-hover table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Цена</th>
+            <th>Длительность</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for service in services %}
+            <tr>
+              <td>{{ service.name }}</td>
+              <td>{{ service.description }}</td>
+              <td>{{ service.price }} ₽</td>
+              <td>{{ service.duration_minutes }} мин.</td>
+              <td class="text-center">
+                <a href="{% url 'edit_service' service.pk %}" class="btn btn-warning btn-sm rounded-pill shadow-sm">
+                  <i class="fas fa-edit"></i> Редактировать
+                </a>
+                <a href="{% url 'delete_service' service.pk %}" class="btn btn-danger btn-sm rounded-pill shadow-sm" onclick="return confirm('Вы уверены, что хотите удалить эту услугу?');">
+                  <i class="fas fa-trash"></i> Удалить
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+
+{% block styles %}
+  <style>
+    /* Стили для кнопок */
+    .btn {
+      font-size: 1rem;
+      padding: 10px 20px;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .table {
+      background-color: #fff;
+      border-radius: 8px;
+    }
+
+    .table th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .table-striped tbody tr:nth-child(odd) {
+      background-color: #f7f7f7;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: #e9ecef;
+    }
+
+    .table-bordered {
+      border: 1px solid #ddd;
+    }
+
+    .table td, .table th {
+      vertical-align: middle;
+    }
+
+    /* Адаптивность для таблицы */
+    @media (max-width: 767px) {
+      .table thead {
+        display: none;
+      }
+
+      .table, .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+      }
+
+      .table tr {
+        margin-bottom: 15px;
+      }
+
+      .table td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+      }
+
+      .table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        font-weight: bold;
+      }
+    }
+  </style>
+{% endblock %}

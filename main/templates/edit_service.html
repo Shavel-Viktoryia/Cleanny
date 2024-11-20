@@ -1,10 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h1 class="text-center mb-4">Редактировать услугу</h1>
+    <form method="POST" class="col-md-6 offset-md-3">
+      {% csrf_token %}
+      <div class="form-group">
+        {{ form.as_p }}
+      </div>
+      <button type="submit" class="btn btn-warning btn-block">Сохранить изменения</button>
+    </form>
+    <div class="mt-3 text-center">
+      <a href="{% url 'services_list' %}" class="btn btn-secondary">Назад</a>
+    </div>
+  </div>
+{% endblock %}

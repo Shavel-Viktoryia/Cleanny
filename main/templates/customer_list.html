@@ -1,10 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="title">Список клиентов</h1>
+        <div class="customer-list">
+            {% for customer in customers %}
+                <div class="customer-card">
+                    <div class="customer-info">
+                        <h3>{{ customer.name }}</h3>
+                        <p><strong>Контактный номер:</strong> {{ customer.contact_number }}</p>
+                    </div>
+                    <div class="customer-actions">
+                        <a href="{% url 'customer_detail' customer.id %}" class="btn btn-view">Просмотреть</a>
+                        <a href="{% url 'customer_edit' customer.id %}" class="btn btn-edit">Редактировать</a>
+                        <a href="{% url 'customer_delete' customer.id %}" class="btn btn-delete" onclick="return confirm('Вы уверены, что хотите удалить этого клиента?');">Удалить</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="add-customer">
+            <a href="{% url 'customer_create' %}" class="btn btn-add">Добавить нового клиента</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .title {
+            text-align: center;
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .customer-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        .customer-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: calc(33.333% - 20px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease;
+        }
+        .customer-card:hover {
+            transform: translateY(-10px);
+        }
+        .customer-info h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .customer-info p {
+            font-size: 1rem;
+            color: #666;
+        }
+        .customer-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .customer-actions .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+        .customer-actions .btn-view {
+            background-color: #007bff;
+            color: white;
+        }
+        .customer-actions .btn-view:hover {
+            background-color: #0056b3;
+        }
+        .customer-actions .btn-edit {
+            background-color: #28a745;
+            color: white;
+        }
+        .customer-actions .btn-edit:hover {
+            background-color: #218838;
+        }
+        .customer-actions .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        .customer-actions .btn-delete:hover {
+            background-color: #c82333;
+        }
+        .add-customer {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .btn.btn-add {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .btn.btn-add:hover {
+            background-color: #218838;
+        }
+    </style>
+{% endblock %}

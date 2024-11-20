@@ -50,6 +50,7 @@ API_TOKEN = '8157684334:AAET35yD8IqRA5RIAal9JHhCDm210sX7zls'
 
 # Состояния для ввода данных
 NAME, CONTACT_NUMBER, EMAIL, ADD_ADDRESS, COMMENT = range(5)
+STATE_COMMENT = "comment"
 
 # Настройка логирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -137,18 +138,16 @@ async def show_orders(update: Update, context: CallbackContext) -> None:
 
         # Кнопка "Назад"
         reply_buttons = [
-            ['Назад']
+            [InlineKeyboardButton("Назад", callback_data="back_to_orders")]
         ]
 
         # Проверяем, откуда пришел запрос
         if update.message:
             # Отправка сообщения с кнопками, если запрос пришел из сообщения
             await update.message.reply_text("Ваша история заказов:", reply_markup=InlineKeyboardMarkup(order_buttons))
-            await update.message.reply_text("Выберите опцию:", reply_markup=ReplyKeyboardMarkup(reply_buttons, one_time_keyboard=True))
         elif update.callback_query:
             # Обработка callback_query, если запрос пришел из callback
             await update.callback_query.message.edit_text("Ваша история заказов:", reply_markup=InlineKeyboardMarkup(order_buttons))
-            await update.callback_query.message.edit_text("Выберите опцию:", reply_markup=ReplyKeyboardMarkup(reply_buttons, one_time_keyboard=True))
 
     else:
         # Если пользователя не найдено
@@ -195,7 +194,6 @@ async def show_order_info(update: Update, context: CallbackContext) -> None:
 
     # Формируем кнопки для оценки и жалобы
     inline_buttons = [
-        [InlineKeyboardButton("Пожаловаться", callback_data=f"complain_{order.id}")],
         [InlineKeyboardButton("Оценить", callback_data=f"rate_{order.id}")]
     ]
 
@@ -269,6 +267,7 @@ async def handle_rate_order(update: Update, context: CallbackContext) -> None:
 
     await query.answer()  # Отправить уведомление, что запрос принят
 
+# Обработчик для кнопки "Оценить"
 async def handle_rating(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     data = query.data
@@ -312,52 +311,57 @@ async def handle_rating(update: Update, context: CallbackContext) -> None:
 
 # Обработчик для кнопки "Оставить комментарий"
 async def handle_comment(update: Update, context: CallbackContext) -> None:
+    logger.info("handle_comment вызван.")
     query = update.callback_query
     data = query.data
 
-    # Извлекаем ID заказа
-    order_id = data.split('_')[1]
+    try:
+        # Извлекаем ID заказа
+        order_id = data.split('_')[1]
+        context.user_data['current_order_id'] = order_id
+        context.user_data['state'] = 'comment'
+        logger.info(f"Установлен order_id: {order_id}. Состояние: 'comment'.")
 
-    # Устанавливаем состояние ожидания комментария
-    context.user_data['current_order_id'] = order_id
-    context.user_data['state'] = COMMENT  # Устанавливаем состояние ожидания комментария
-
-    logger.info(f"Order ID set: {context.user_data['current_order_id']}")
-    logger.info(f"Awaiting comment state: {context.user_data['state']}")
-
-    # Меняем текст в сообщении, чтобы пользователь знал, что нужно ввести комментарий
-    await query.message.edit_text(
-        "Пожалуйста, напишите ваш комментарий в ответ на это сообщение.",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data="back_to_orders")]]),
-    )
-    await query.answer("Введите ваш комментарий.")  # Уведомляем пользователя
+        # Уведомляем пользователя
+        await query.message.edit_text("Пожалуйста, оставьте ваш комментарий:")
+        logger.info("Пользователю отправлено сообщение с запросом комментария.")
+    except IndexError as e:
+        logger.error(f"Ошибка извлечения ID заказа: {e}")
+        await query.message.reply_text("Ошибка: неверный формат данных.")
+    except Exception as e:
+        logger.exception(f"Неожиданная ошибка: {e}")
+        await query.message.reply_text("Произошла ошибка. Попробуйте снова позже.")
 
 # Обработчик для сохранения комментария
 async def handle_comment_input(update: Update, context: CallbackContext) -> None:
-    # Логируем текущее состояние
-    logger.info(f"handle_comment_input вызван: current state={context.user_data.get('state')}")
+    logger.info("handle_comment_input вызван.")
+    state = context.user_data.get('state')
+    logger.info(f"Текущее состояние: {state}")
 
-    # Проверяем, ожидается ли комментарий
-    if context.user_data.get('state') == COMMENT:
-        # Получаем текст комментария
+    if state == 'comment':
         comment = update.message.text
+        logger.info(f"Получен комментарий: {comment}")
         order_id = context.user_data.get('current_order_id')
 
         if not order_id:
-            await update.message.reply_text("Ошибка: ID заказа отсутствует.")
+            logger.warning("Не удалось определить заказ.")
+            await update.message.reply_text("Ошибка: не удалось определить заказ.")
             return
 
         try:
-            # Находим заказ в базе данных
+            # Получаем заказ
             order = await sync_to_async(Order.objects.get)(id=order_id)
+            logger.info(f"Заказ {order_id} успешно найден.")
+
             chat_id = str(update.message.chat_id)
             customer = await sync_to_async(Customer.objects.filter(telegram_id=chat_id).first)()
 
             if not customer:
+                logger.warning("Клиент не найден.")
                 await update.message.reply_text("Ошибка: пользователь не найден.")
                 return
 
-            # Находим или создаём отзыв
+            # Создаём или обновляем отзыв
             review, created = await sync_to_async(Review.objects.get_or_create)(
                 customer=customer,
                 order=order,
@@ -367,15 +371,26 @@ async def handle_comment_input(update: Update, context: CallbackContext) -> None
             if not created:
                 review.comment = comment
                 await sync_to_async(review.save)()
+                logger.info(f"Обновлён комментарий для заказа {order_id}: {comment}")
+            else:
+                logger.info(f"Добавлен новый комментарий для заказа {order_id}: {comment}")
 
-            await update.message.reply_text("Ваш комментарий успешно добавлен.")
-            context.user_data['state'] = None  # Сбрасываем состояние
+            # Уведомляем пользователя
+            await update.message.reply_text("Ваш комментарий успешно добавлен!")
+            logger.info("Пользователю отправлено подтверждение.")
 
+            # Сбрасываем состояние
+            context.user_data['state'] = None
+            context.user_data.pop('current_order_id', None)
+        except Order.DoesNotExist:
+            logger.error(f"Заказ {order_id} не найден.")
+            await update.message.reply_text("Ошибка: заказ не найден.")
         except Exception as e:
-            logger.error(f"Ошибка при сохранении комментария: {e}")
-            await update.message.reply_text("Произошла ошибка при сохранении комментария.")
+            logger.exception(f"Ошибка при обработке комментария: {e}")
+            await update.message.reply_text("Произошла ошибка. Попробуйте снова позже.")
     else:
-        await update.message.reply_text("Нет ожидающего комментария.")
+        logger.info("Комментарий не ожидается в текущий момент.")
+        await update.message.reply_text("Сейчас не ожидается комментарий.")
 
 async def call_cleaning(update: Update, context: CallbackContext) -> None:
     # Проверяем, есть ли update.message или update.callback_query

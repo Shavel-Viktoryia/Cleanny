@@ -1,19 +1,39 @@
+<!-- schedule_list.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <title>Список расписаний</title>
 </head>
 <body>
     <h1>Список расписаний</h1>
     <ul>
-        {% for schedule in schedules %}
-        <li>
-            {{ schedule.personnel }} — <a href="{% url 'edit_schedule' schedule.id %}">Редактировать</a>
-        </li>
-        {% endfor %}
+      {% for schedule in schedules %}
+      <li>
+        <strong>{{ schedule.personnel }}</strong>
+        <table border="1">
+            <tr>
+                <th>Работник/Число</th>
+                <!-- Заголовки дней недели -->
+                {% for day in schedule.data_from_google.0 %}
+                    <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+            <!-- Строки с данными -->
+            {% for row in schedule.data_from_google %}
+            <tr>
+                <td>{{ row.0 }}</td>  <!-- Работник/число -->
+                {% for cell in row.1 %}
+                    <td>{{ cell }}</td>  <!-- Ячейки расписания -->
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+        <a href="{% url 'edit_schedule' schedule_id=schedule.id %}">Редактировать</a>
+      </li>
+      {% endfor %}
     </ul>
-    <a href="{% url 'new_schedule' %}">Добавить новое расписание</a>
 </body>
 </html>

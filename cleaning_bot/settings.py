@@ -130,4 +130,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 GOOGLE_CREDENTIALS_FILE = r"D:\Cleaner\Cleaner\mypython-427607-38a29feb0dfa.json"
+SPREADSHEET_ID = '1t8OpCZkhApUe5ebilYr05_ukrgOVtV1umeLLBxJYPAo'
+RANGE_NAME = 'Sheet1!A2:AF6'  # Укажите диапазон данных
 

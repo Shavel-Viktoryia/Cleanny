@@ -168,13 +168,14 @@ class EquipmentUsage(models.Model):
 class WorkSchedule(models.Model):
     personnel = models.ForeignKey(Personnel, on_delete=models.CASCADE)
     schedule_url = models.URLField()  # Ссылка на Google Таблицу с расписанием
+    schedule_data = models.JSONField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     def fetch_schedule(self):
         """
         Получает расписание из таблицы с месяцем и днями недели, где работник отмечает + в день работы.
         """
-        sheet_id = self.schedule_url.split('/')[5]
+        sheet_id = self.schedule_url.split('/')[5]  # Получаем ID из URL
 
         SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
         creds = Credentials.from_service_account_file(
